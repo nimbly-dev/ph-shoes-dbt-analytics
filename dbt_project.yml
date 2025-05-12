@@ -1,39 +1,37 @@
-name: 'ph_shoes_analytics'      
+name: 'ph_shoes_analytics'
 version: '1.0.0'
 config-version: 2
+profile: 'ph-shoes-snowflake-connection'
 
-profile: 'ph-shoes'
-model-paths:   ["models"]
-analysis-paths:["analyses"]
-test-paths:    ["tests"]
-snapshot-paths:["snapshots"]
-seed-paths:    ["seeds"]
-macro-paths:   ["macros"]
+model-paths:    ["models"]
+analysis-paths: ["analyses"]
+test-paths:     ["tests"]
+snapshot-paths: ["snapshots"]
+seed-paths:     ["seeds"]
+macro-paths:    ["macros"]
 
 # Clean targets
 target-path:   "target"
-clean-targets: 
+clean-targets:
   - "target"
   - "dbt_packages"
 
+
+
+#
 models:
   ph_shoes_analytics:
-    # 1) RAW layer: just exposes your external/raw table as views
+
     raw:
+      +schema: RAW
       +materialized: view
 
-    # 2) STAGING layer: cleans up raw data; build as incremental tables
     staging:
+      +schema: STAGING
       +materialized: incremental
       +incremental_strategy: merge
-      +unique_key: dwid              
+      +unique_key: dwid
 
-    # 3) MARTS layer: final fact/dimension tables as full tables
     marts:
+      +schema: MARTS
       +materialized: table
-
-
-vars:
-  raw_schema:     raw
-  staging_schema: staging
-  mart_schema:    marts

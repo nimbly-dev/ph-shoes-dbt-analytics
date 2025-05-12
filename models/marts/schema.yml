@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: fact_product_shoes
+    description: |
+      The canonical fact table of daily shoe prices,
+      partitioned by dwid (YYYYMMDD) and keyed on id+dwid.
+    columns:
+      - name: id
+        tests:
+          - not_null
+      - name: dwid
+        tests:
+          - not_null
+      - name: price_sale
+        tests:
+          - not_null
+      - name: brand
+        tests:
+          - not_null
+      - name: year
+        tests:
+          - not_null
+      - name: month
+        tests:
+          - not_null
+      - name: day
+        tests:
+          - not_null
