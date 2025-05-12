@@ -1,0 +1,24 @@
+ph-shoes:
+  target: dev         
+  outputs:
+    dev:
+      type: snowflake
+      account:    "{{ env_var('DBT_SF_ACCOUNT') }}"
+      user:       "{{ env_var('DBT_ENV_SECRET_SF_USER') }}"
+      password:   "{{ env_var('DBT_ENV_SECRET_SF_PASSWORD') }}"
+      role:       "{{ env_var('DBT_SF_ROLE') }}"
+      database:   "{{ env_var('DBT_SF_DATABASE') }}"
+      warehouse:  "{{ env_var('DBT_SF_WAREHOUSE') }}"
+      threads:    "{{ env_var('DBT_THREADS') }}"
+      client_session_keep_alive: "{{ env_var('DBT_CLIENT_SESSION_KEEP_ALIVE') }}"
+
+    # prod:
+    #   type: snowflake
+    #   account:    "{{ env_var('DBT_SF_ACCOUNT_PROD') }}"
+    #   user:       "{{ env_var('DBT_ENV_SECRET_SF_USER_PROD') }}"
+    #   password:   "{{ env_var('DBT_ENV_SECRET_SF_PASSWORD_PROD') }}"
+    #   role:       "{{ env_var('DBT_SF_ROLE_PROD') }}"
+    #   database:   "{{ env_var('DBT_SF_DATABASE_PROD') }}"
+    #   warehouse:  "{{ env_var('DBT_SF_WAREHOUSE_PROD') }}"
+    #   threads:    "{{ env_var('DBT_THREADS_PROD') }}"
+    #   client_session_keep_alive: true
