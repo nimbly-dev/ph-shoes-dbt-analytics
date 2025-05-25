@@ -1,5 +1,3 @@
-# models/marts/product_shoes/fact/schema.yml
-
 version: 2
 
 models:
@@ -57,6 +55,8 @@ models:
 
       - name: price_original
         description: "Original list price"
+        tests:
+          - not_null
 
       - name: gender
         description: "Intended gender(s)"
@@ -70,4 +70,3 @@ models:
         description: "Brand name (extracted from filename)"
         tests:
           - not_null
-
