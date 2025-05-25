@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: raw
+    database: PH_SHOES_DB
+    schema: RAW
+    tables:
+      - name: RAW_PRODUCT_SHOES_RAW

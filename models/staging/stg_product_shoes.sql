@@ -1,14 +1,13 @@
-{{  
+{{ 
   config(
-    materialized='incremental',
-    unique_key='dwid'
-  ) 
+    materialized         = 'incremental',
+    incremental_strategy = 'merge',
+    unique_key           = ['id','dwid']
+  )
 }}
 
-with raw as (
-
+with raw_csv as (
   select
-    -- 1) core CSV columns by position (adjust if your header order differs)
     t.$1::string    as id,
     t.$2::string    as title,
     t.$3::string    as subTitle,
@@ -19,45 +18,39 @@ with raw as (
     t.$8::array     as gender,
     t.$9::string    as age_group,
 
-    -- 2) derive the brand from the filename: e.g. "nike_...csv"
-    split_part(split_part(metadata$filename, '/', -1), '_', 1)
-      as brand,
+    metadata$filename     as file_path,
 
-    -- 3) pull year/month/day out of the path: raw/{year}/{month}/{day}/...
-    to_number(split_part(metadata$filename, '/', 3))  as year,
-    to_number(split_part(metadata$filename, '/', 4))  as month,
-    to_number(split_part(metadata$filename, '/', 5))  as day,
+    current_timestamp()   as loaded_at
 
-    -- 4) dwid as YYYYMMDD
-    to_varchar(
-      split_part(metadata$filename, '/', 3) ||
-      lpad(split_part(metadata$filename, '/', 4), 2, '0') ||
-      lpad(split_part(metadata$filename, '/', 5), 2, '0')
-    ) as dwid
+  from @PH_SHOES_DB.RAW.S3_RAW_PRODUCT_SHOES_STAGE
+    (file_format => 'PH_SHOES_DB.RAW.CSV_RAW_FORMAT') t
+),
 
-  from @raw_product_shoes_stage (file_format => 'csv_raw_format') t
+enriched as (
+  select
+    -- batch identifiers
+    to_varchar(date_trunc('day', loaded_at), 'YYYYMMDD') as dwid,
+    year(loaded_at)::int   as year,
+    month(loaded_at)::int  as month,
+    day(loaded_at)::int    as day,
 
+    -- 9 CSV columns
+    id, title, subTitle, url, image,
+    price_sale, price_original, gender, age_group,
+
+    -- derive brand from the filename
+    split_part(split_part(file_path, '/', -1), '_', 1) as brand
+
+  from raw_csv
+),
+
+to_load as (
+  select *
+  from enriched
+
+  {% if is_incremental() %}
+    where dwid > coalesce((select max(dwid) from {{ this }}), '00000000')
+  {% endif %}
 )
 
-select
-  id,
-  title,
-  subTitle,
-  url,
-  image,
-  price_sale,
-  price_original,
-  gender,
-  age_group,
-  brand,
-  dwid,
-  year,
-  month,
-  day
-
-from raw
-
-{% if is_incremental() %}
-  -- only load new batches
-  where dwid > (select max(dwid) from {{ this }})
-{% endif %}
+select * from to_load

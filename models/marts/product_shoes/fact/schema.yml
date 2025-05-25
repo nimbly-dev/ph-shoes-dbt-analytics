@@ -1,32 +1,31 @@
+# models/marts/product_shoes/fact/schema.yml
+
 version: 2
 
 models:
-  - name: stg_product_shoes
+  - name: fact_product_shoes
     description: |
-      Standardized staging of product shoes data:
-      - reads from RAW.RAW_PRODUCT_SHOES_RAW
-      - exposes exactly the BaseShoe + FactProductShoe fields
-      - no extra JSON; no loaded_at
-      - derives dwid/year/month/day
+      The canonical daily fact of shoe data.
+      Combines BaseShoe + FactProductShoe fields and merges on (id, dwid).
     columns:
       - name: dwid
-        description: "Batch-load date (YYYYMMDD)"
+        description: "Batch‐load date (YYYYMMDD)"
         tests:
           - not_null
           - unique
 
       - name: year
-        description: "Batch-load year"
+        description: "Batch‐load year"
         tests:
           - not_null
 
       - name: month
-        description: "Batch-load month"
+        description: "Batch‐load month"
         tests:
           - not_null
 
       - name: day
-        description: "Batch-load day"
+        description: "Batch‐load day"
         tests:
           - not_null
 
@@ -41,7 +40,7 @@ models:
           - not_null
 
       - name: subTitle
-        description: "Optional subtitle or secondary description"
+        description: "Optional subtitle"
 
       - name: url
         description: "Product URL"
@@ -49,7 +48,7 @@ models:
           - not_null
 
       - name: image
-        description: "Product image URL"
+        description: "Image URL"
 
       - name: price_sale
         description: "Sale price"
@@ -57,17 +56,18 @@ models:
           - not_null
 
       - name: price_original
-        description: "Original (list) price"
+        description: "Original list price"
 
       - name: gender
-        description: "Intended gender(s) for the shoe"
+        description: "Intended gender(s)"
         tests:
           - not_null
 
       - name: age_group
-        description: "Target age group (e.g. 'adult')"
+        description: "Target age group"
 
       - name: brand
-        description: "Brand extracted in raw landing"
+        description: "Brand name (extracted from filename)"
         tests:
           - not_null
+
