@@ -58,6 +58,8 @@ models:
 
       - name: price_original
         description: "Original (list) price"
+        tests:
+          - not_null
 
       - name: gender
         description: "Intended gender(s) for the shoe"

@@ -6,51 +6,69 @@
   )
 }}
 
-with raw_csv as (
-  select
-    t.$1::string    as id,
-    t.$2::string    as title,
-    t.$3::string    as subTitle,
-    t.$4::string    as url,
-    t.$5::string    as image,
-    t.$6::float     as price_sale,
-    t.$7::float     as price_original,
-    t.$8::array     as gender,
-    t.$9::string    as age_group,
-
-    metadata$filename     as file_path,
-
-    current_timestamp()   as loaded_at
-
-  from @PH_SHOES_DB.RAW.S3_RAW_PRODUCT_SHOES_STAGE
+WITH raw_csv AS (
+  SELECT
+    t.$1::STRING              AS id,
+    t.$2::STRING              AS title,
+    t.$3::STRING              AS subTitle,
+    t.$4::STRING              AS url,
+    t.$5::STRING              AS image,
+    t.$6::FLOAT               AS price_sale,
+    t.$7::FLOAT               AS price_original,
+    -- read gender as VARIANT (could be array or scalar)
+    t.$8::VARIANT             AS gender_raw,
+    t.$9::STRING              AS age_group,
+    metadata$filename         AS file_path,
+    CURRENT_TIMESTAMP()       AS loaded_at
+  FROM @PH_SHOES_DB.RAW.S3_RAW_PRODUCT_SHOES_STAGE
     (file_format => 'PH_SHOES_DB.RAW.CSV_RAW_FORMAT') t
 ),
 
-enriched as (
-  select
+enriched AS (
+  SELECT
     -- batch identifiers
-    to_varchar(date_trunc('day', loaded_at), 'YYYYMMDD') as dwid,
-    year(loaded_at)::int   as year,
-    month(loaded_at)::int  as month,
-    day(loaded_at)::int    as day,
+    TO_VARCHAR(DATE_TRUNC('day', loaded_at), 'YYYYMMDD') AS dwid,
+    YEAR(loaded_at)::INT      AS year,
+    MONTH(loaded_at)::INT     AS month,
+    DAY(loaded_at)::INT       AS day,
 
-    -- 9 CSV columns
-    id, title, subTitle, url, image,
-    price_sale, price_original, gender, age_group,
+    -- raw fields
+    id,
+    title,
+    subTitle,
+    url,
+    image,
+    price_sale,
+    price_original,
+    age_group,
+    file_path,
+    
+    -- normalize gender_raw → gender (single string):
+    CASE
+      WHEN TYPEOF(gender_raw) = 'ARRAY' THEN
+        -- >1 entry ⇒ unisex; else pick the first element
+        CASE
+          WHEN ARRAY_SIZE(gender_raw) > 1 THEN 'unisex'
+          ELSE LOWER(gender_raw[0]::STRING)
+        END
+      WHEN TYPEOF(gender_raw) IN ('OBJECT','NUMBER','BOOLEAN') THEN
+        -- treat anything else as its stringified value
+        LOWER(gender_raw::STRING)
+      ELSE
+        -- null or unsupported
+        NULL
+    END AS gender,
 
-    -- derive brand from the filename
-    split_part(split_part(file_path, '/', -1), '_', 1) as brand
-
-  from raw_csv
+    -- derive brand from filename
+    SPLIT_PART(SPLIT_PART(file_path, '/', -1), '_', 1) AS brand
+  FROM raw_csv
 ),
 
-to_load as (
-  select *
-  from enriched
-
+to_load AS (
+  SELECT * FROM enriched
   {% if is_incremental() %}
-    where dwid > coalesce((select max(dwid) from {{ this }}), '00000000')
+    WHERE dwid > COALESCE((SELECT MAX(dwid) FROM {{ this }}), '00000000')
   {% endif %}
 )
 
-select * from to_load
+SELECT * FROM to_load;
