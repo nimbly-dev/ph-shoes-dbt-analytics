@@ -65,10 +65,12 @@ enriched AS (
 ),
 
 to_load AS (
-  SELECT * FROM enriched
+  SELECT *
+  FROM enriched
   {% if is_incremental() %}
     WHERE dwid > COALESCE((SELECT MAX(dwid) FROM {{ this }}), '00000000')
   {% endif %}
 )
 
-SELECT * FROM to_load;
+SELECT *
+FROM to_load
