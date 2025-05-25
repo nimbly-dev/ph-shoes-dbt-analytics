@@ -10,27 +10,31 @@ snapshot-paths: ["snapshots"]
 seed-paths:     ["seeds"]
 macro-paths:    ["macros"]
 
-# Clean targets
+
 target-path:   "target"
 clean-targets:
   - "target"
   - "dbt_packages"
 
 
-
-#
 models:
   ph_shoes_analytics:
 
     raw:
       +schema: RAW
       +materialized: view
+      +pre-hook: 
+        - "COPY INTO RAW.RAW_PRODUCT_SHOES_RAW (id, title, subTitle, url, image, price_sale, price_original, gender, age_group)
+           FROM @RAW.S3_RAW_PRODUCT_SHOES_STAGE
+           FILE_FORMAT = 'RAW.CSV_RAW_FORMAT'
+           ON_ERROR    = 'ABORT_STATEMENT';"
 
     staging:
       +schema: STAGING
       +materialized: incremental
       +incremental_strategy: merge
       +unique_key: dwid
+
 
     marts:
       +schema: MARTS
