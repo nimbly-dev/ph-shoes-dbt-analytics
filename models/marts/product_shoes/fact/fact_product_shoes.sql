@@ -58,7 +58,8 @@ with
             price_sale,
             price_original,
             gender,
-            age_group
+            age_group,
+            NULL::VARIANT AS embedding
         from deduped
     )
 
