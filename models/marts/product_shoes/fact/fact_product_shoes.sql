@@ -16,6 +16,7 @@
 {{ log("target.schema: " ~ target.schema, info=True) }}
 
 with
+
   raw_data as (
     select
       id,
@@ -40,6 +41,8 @@ with
         and day   = {{ var("day")   }}
     {% endif %}
   ),
+
+
   deduped as (
     select
       id,
@@ -61,12 +64,13 @@ with
         *,
         row_number() over (
           partition by id, dwid
-          order by loaded_at desc  
+          order by id        
         ) as row_num
       from raw_data
     )
     where row_num = 1
   ),
+
   final as (
     select
       brand,
