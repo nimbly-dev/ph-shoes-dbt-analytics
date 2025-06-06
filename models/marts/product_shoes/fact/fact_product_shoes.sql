@@ -16,52 +16,75 @@
 {{ log("target.schema: " ~ target.schema, info=True) }}
 
 with
-    raw_data as (
-        select
-            id,
-            title,
-            subtitle,
-            url,
-            image,
-            price_sale,
-            price_original,
-            gender,
-            age_group,
-            brand,
-            dwid,
-            year,
-            month,
-            day
-        from {{ ref("stg_product_shoes") }}
-        {% if is_incremental() and var("year", none) is not none %}
-            where
-                year = {{ var("year") }}
-                and month = {{ var("month") }}
-                and day = {{ var("day") }}
-        {% endif %}
-    ),
-
-    deduped as (select distinct * from raw_data),
-
-    final as (
-        select
-            brand,
-            dwid,
-            year,
-            month,
-            day,
-            id,
-            title,
-            subtitle,
-            url,
-            image,
-            price_sale,
-            price_original,
-            gender,
-            age_group,
-            NULL::VARIANT AS embedding
-        from deduped
+  raw_data as (
+    select
+      id,
+      title,
+      subtitle,
+      url,
+      image,
+      price_sale,
+      price_original,
+      gender,
+      age_group,
+      brand,
+      dwid,
+      year,
+      month,
+      day
+    from {{ ref("stg_product_shoes") }}
+    {% if is_incremental() and var("year", none) is not none %}
+      where
+        year  = {{ var("year")  }}
+        and month = {{ var("month") }}
+        and day   = {{ var("day")   }}
+    {% endif %}
+  ),
+  deduped as (
+    select
+      id,
+      title,
+      subtitle,
+      url,
+      image,
+      price_sale,
+      price_original,
+      gender,
+      age_group,
+      brand,
+      dwid,
+      year,
+      month,
+      day
+    from (
+      select
+        *,
+        row_number() over (
+          partition by id, dwid
+          order by loaded_at desc  
+        ) as row_num
+      from raw_data
     )
+    where row_num = 1
+  ),
+  final as (
+    select
+      brand,
+      dwid,
+      year,
+      month,
+      day,
+      id,
+      title,
+      subtitle,
+      url,
+      image,
+      price_sale,
+      price_original,
+      gender,
+      age_group
+    from deduped
+  )
 
 select *
 from final

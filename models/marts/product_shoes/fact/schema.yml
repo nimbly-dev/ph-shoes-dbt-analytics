@@ -70,10 +70,3 @@ models:
         description: "Brand name (extracted from filename)"
         tests:
           - not_null
-
-      - name: embedding
-        description: |
-          Embedding vector for semantic search, stored as VARIANT.
-          Populated nightly by a separate embedding‐backfill job.
-        tests:
-          - exists
