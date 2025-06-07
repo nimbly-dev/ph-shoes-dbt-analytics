@@ -15,9 +15,9 @@ WITH raw_csv AS (
     image,
     price_sale,
     price_original,
-    gender     AS gender_raw,
+    gender        AS gender_raw,
     age_group,
-    brand      AS brand_raw,
+    brand         AS brand_raw,
     loaded_at
   FROM PH_SHOES_DB.RAW.RAW_PRODUCT_SHOES_RAW
 ),
@@ -25,7 +25,7 @@ WITH raw_csv AS (
 enriched AS (
   SELECT
     -- batch identifiers
-    TO_VARCHAR( DATE_TRUNC('day', loaded_at), 'YYYYMMDD') AS dwid,
+    TO_VARCHAR(DATE_TRUNC('day', loaded_at), 'YYYYMMDD') AS dwid,
     YEAR(loaded_at)::INT   AS year,
     MONTH(loaded_at)::INT  AS month,
     DAY(loaded_at)::INT    AS day,
@@ -40,7 +40,7 @@ enriched AS (
     price_original,
     age_group,
 
-    -- STEP 1: normalize to ARRAY
+    -- STEP 1: normalize to an ARRAY
     CASE
       WHEN TYPEOF(gender_raw) = 'ARRAY' THEN gender_raw
       WHEN TRY_PARSE_JSON(gender_raw) IS NOT NULL
@@ -51,7 +51,7 @@ enriched AS (
       ELSE NULL
     END AS gender_arr,
 
-    -- STEP 2: collapse array → single string
+    -- STEP 2: collapse that ARRAY → single string
     CASE
       WHEN gender_arr IS NULL         THEN NULL
       WHEN ARRAY_SIZE(gender_arr) > 1 THEN 'unisex'
@@ -82,10 +82,9 @@ to_load AS (
     age_group,
     brand
   FROM enriched
-
   {% if is_incremental() %}
     WHERE dwid > COALESCE(
-      (SELECT MAX(dwid) FROM {{ this }}), 
+      (SELECT MAX(dwid) FROM {{ this }}),
       '00000000'
     )
   {% endif %}
