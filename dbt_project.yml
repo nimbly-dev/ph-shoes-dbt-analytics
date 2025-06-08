@@ -39,3 +39,7 @@ models:
     marts:
       +schema: MARTS
       +materialized: table
+
+
+on-run-end:
+  - "{{ export_to_s3_run() }}"

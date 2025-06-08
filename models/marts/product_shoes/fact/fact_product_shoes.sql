@@ -1,94 +1,61 @@
-{{ 
+{{  
   config(
     materialized='incremental',
     incremental_strategy='merge',
-    unique_key=['id','dwid'],
-    post_hook=[ 
-      export_to_s3(
-        this,
-        '@PH_SHOES_DB.RAW.S3_FACT_PRODUCT_SHOES_STAGE',
-        schema = target.schema ~ '_MARTS'
-      )
-    ]
+    unique_key=['id','dwid']
   ) 
 }}
 
-{{ log("target.schema: " ~ target.schema, info=True) }}
+WITH raw_data AS (
+  SELECT
+    id,
+    title,
+    subtitle,
+    url,
+    image,
+    price_sale,
+    price_original,
+    gender,
+    age_group,
+    brand,
+    dwid,
+    year,
+    month,
+    day
+  FROM {{ ref('stg_product_shoes') }}
+  {% if is_incremental() and var('year', none) is not none %}
+    WHERE
+      year  = {{ var('year') }}
+      AND month = {{ var('month') }}
+      AND day   = {{ var('day') }}
+  {% endif %}
+),
 
-with
+deduped AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY id, dwid ORDER BY id) AS row_num
+  FROM raw_data
+),
 
-  raw_data as (
-    select
-      id,
-      title,
-      subtitle,
-      url,
-      image,
-      price_sale,
-      price_original,
-      gender,
-      age_group,
-      brand,
-      dwid,
-      year,
-      month,
-      day
-    from {{ ref("stg_product_shoes") }}
-    {% if is_incremental() and var("year", none) is not none %}
-      where
-        year  = {{ var("year")  }}
-        and month = {{ var("month") }}
-        and day   = {{ var("day")   }}
-    {% endif %}
-  ),
+final AS (
+  SELECT
+    brand,
+    dwid,
+    year,
+    month,
+    day,
+    id,
+    title,
+    subtitle,
+    url,
+    image,
+    price_sale,
+    price_original,
+    gender,
+    age_group
+  FROM deduped
+  WHERE row_num = 1
+)
 
-
-  deduped as (
-    select
-      id,
-      title,
-      subtitle,
-      url,
-      image,
-      price_sale,
-      price_original,
-      gender,
-      age_group,
-      brand,
-      dwid,
-      year,
-      month,
-      day
-    from (
-      select
-        *,
-        row_number() over (
-          partition by id, dwid
-          order by id        
-        ) as row_num
-      from raw_data
-    )
-    where row_num = 1
-  ),
-
-  final as (
-    select
-      brand,
-      dwid,
-      year,
-      month,
-      day,
-      id,
-      title,
-      subtitle,
-      url,
-      image,
-      price_sale,
-      price_original,
-      gender,
-      age_group
-    from deduped
-  )
-
-select *
-from final
+SELECT * FROM final

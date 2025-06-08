@@ -1,93 +1,97 @@
-{{ 
-  config(
-    materialized         = 'incremental',
-    incremental_strategy = 'merge',
-    unique_key           = ['id','dwid']
-  )
+{{
+    config(
+        materialized="incremental",
+        incremental_strategy="merge",
+        unique_key=["id", "dwid"],
+    )
 }}
 
-WITH raw_csv AS (
-  SELECT
-    id,
-    title,
-    subTitle,
-    url,
-    image,
-    price_sale,
-    price_original,
-    gender        AS gender_raw,
-    age_group,
-    brand         AS brand_raw,
-    loaded_at
-  FROM PH_SHOES_DB.RAW.RAW_PRODUCT_SHOES_RAW
-),
+with
+    raw_csv as (
+        select
+            id,
+            title,
+            subtitle,
+            url,
+            image,
+            price_sale,
+            price_original,
+            gender as gender_raw,
+            age_group,
+            brand as brand_raw,
+            loaded_at
+        from ph_shoes_db.raw.raw_product_shoes_raw
+    ),
+    enriched as (
+        select
+            -- batch identifiers
+            to_varchar(date_trunc('day', loaded_at), 'YYYYMMDD') as dwid,
+            year(loaded_at)::int as year,
+            month(loaded_at)::int as month,
+            day(loaded_at)::int as day,
 
-enriched AS (
-  SELECT
-    -- batch identifiers
-    TO_VARCHAR(DATE_TRUNC('day', loaded_at), 'YYYYMMDD') AS dwid,
-    YEAR(loaded_at)::INT   AS year,
-    MONTH(loaded_at)::INT  AS month,
-    DAY(loaded_at)::INT    AS day,
+            -- raw fields
+            id,
+            title,
+            subtitle,
+            url,
+            image,
+            price_sale,
+            price_original,
+            age_group,
 
-    -- raw fields
-    id,
-    title,
-    subTitle,
-    url,
-    image,
-    price_sale,
-    price_original,
-    age_group,
+            case
+                when typeof(gender_raw) = 'ARRAY'
+                then gender_raw
 
-    -- STEP 1: normalize to an ARRAY
-    CASE
-      WHEN TYPEOF(gender_raw) = 'ARRAY' THEN gender_raw
-      WHEN TRY_PARSE_JSON(gender_raw) IS NOT NULL
-           AND TYPEOF(TRY_PARSE_JSON(gender_raw)) = 'ARRAY'
-        THEN TRY_PARSE_JSON(gender_raw)
-      WHEN gender_raw IS NOT NULL
-        THEN ARRAY_CONSTRUCT(gender_raw::STRING)
-      ELSE NULL
-    END AS gender_arr,
+                when
+                    typeof(gender_raw) = 'STRING'
+                    and try_parse_json(gender_raw::string) is not null
+                    and typeof(try_parse_json(gender_raw::string)) = 'ARRAY'
+                then try_parse_json(gender_raw::string)
 
-    -- STEP 2: collapse that ARRAY → single string
-    CASE
-      WHEN gender_arr IS NULL         THEN NULL
-      WHEN ARRAY_SIZE(gender_arr) > 1 THEN 'unisex'
-      WHEN ARRAY_SIZE(gender_arr) = 1 THEN LOWER(gender_arr[0]::STRING)
-      ELSE NULL
-    END AS gender,
+                when typeof(gender_raw) = 'STRING' and gender_raw is not null
+                then array_construct(gender_raw::string)
 
-    -- use the existing brand column
-    brand_raw AS brand
+                else null
+            end as gender_arr,
 
-  FROM raw_csv
-),
+            /* STEP 2: collapse ARRAY → single lowercase string */
+            case
+                when gender_arr is null
+                then null
+                when array_size(gender_arr) > 1
+                then 'unisex'
+                when array_size(gender_arr) = 1
+                then lower(gender_arr[0]::string)
+                else null
+            end as gender,
 
-to_load AS (
-  SELECT
-    dwid,
-    year,
-    month,
-    day,
-    id,
-    title,
-    subTitle,
-    url,
-    image,
-    price_sale,
-    price_original,
-    gender,
-    age_group,
-    brand
-  FROM enriched
-  {% if is_incremental() %}
-    WHERE dwid > COALESCE(
-      (SELECT MAX(dwid) FROM {{ this }}),
-      '00000000'
+            brand_raw as brand
+        from raw_csv
+    ),
+    to_load as (
+        select
+            dwid,
+            year,
+            month,
+            day,
+            id,
+            title,
+            subtitle,
+            url,
+            image,
+            price_sale,
+            price_original,
+            gender,
+            age_group,
+            brand
+        from enriched
+
+        {% if is_incremental() %}
+            where dwid > coalesce((select max(dwid) from {{ this }}), '00000000')
+        {% endif %}
     )
-  {% endif %}
-)
 
-SELECT * FROM to_load;
+select *
+from to_load
