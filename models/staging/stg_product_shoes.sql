@@ -16,19 +16,20 @@ with
             image,
             price_sale,
             price_original,
-            gender as gender_raw,
+            gender   as gender_raw,
             age_group,
-            brand as brand_raw,
+            brand    as brand_raw,
             loaded_at
         from ph_shoes_db.raw.raw_product_shoes_raw
     ),
+
     enriched as (
         select
             -- batch identifiers
             to_varchar(date_trunc('day', loaded_at), 'YYYYMMDD') as dwid,
-            year(loaded_at)::int as year,
+            year(loaded_at)::int  as year,
             month(loaded_at)::int as month,
-            day(loaded_at)::int as day,
+            day(loaded_at)::int   as day,
 
             -- raw fields
             id,
@@ -41,35 +42,28 @@ with
             age_group,
 
             case
-                when typeof(gender_raw) = 'ARRAY'
-                then gender_raw
-
-                when
-                    typeof(gender_raw) = 'STRING'
-                    and try_parse_json(gender_raw::string) is not null
-                    and typeof(try_parse_json(gender_raw::string)) = 'ARRAY'
-                then try_parse_json(gender_raw::string)
-
+                when typeof(gender_raw) = 'ARRAY' then gender_raw
+                when typeof(gender_raw) = 'STRING'
+                     and try_parse_json(gender_raw::string) is not null
+                     and typeof(try_parse_json(gender_raw::string)) = 'ARRAY'
+                     then try_parse_json(gender_raw::string)
                 when typeof(gender_raw) = 'STRING' and gender_raw is not null
-                then array_construct(gender_raw::string)
-
+                     then array_construct(gender_raw::string)
                 else null
             end as gender_arr,
 
-            /* STEP 2: collapse ARRAY → single lowercase string */
+            /* collapse ARRAY → single lowercase string */
             case
-                when gender_arr is null
-                then null
-                when array_size(gender_arr) > 1
-                then 'unisex'
-                when array_size(gender_arr) = 1
-                then lower(gender_arr[0]::string)
+                when gender_arr is null            then null
+                when array_size(gender_arr) > 1     then 'unisex'
+                when array_size(gender_arr) = 1     then lower(gender_arr[0]::string)
                 else null
             end as gender,
 
             brand_raw as brand
         from raw_csv
     ),
+
     to_load as (
         select
             dwid,
@@ -90,6 +84,9 @@ with
 
         {% if is_incremental() %}
             where dwid > coalesce((select max(dwid) from {{ this }}), '00000000')
+              and price_original <> 0
+        {% else %}
+            where price_original <> 0
         {% endif %}
     )
 
