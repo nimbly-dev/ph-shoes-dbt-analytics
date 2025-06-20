@@ -3,6 +3,29 @@
         materialized="incremental",
         incremental_strategy="merge",
         unique_key=["id", "dwid"],
+        post_hook=[
+                "
+                -- TEMPORARY FIX: force-set brand from URL; handling of brand SHOULD be on raw extract.
+                UPDATE {{ this }}
+                SET brand = CASE
+                    WHEN LOWER(url) LIKE '%://www.nike.%'               THEN 'nike'
+                    WHEN LOWER(url) LIKE '%://www.adidas.%'             THEN 'adidas'
+                    WHEN LOWER(url) LIKE '%://atmos.ph/collections/new-balance/%' THEN 'newbalance'
+                    WHEN LOWER(url) LIKE '%://worldbalance.%'           THEN 'worldbalance'
+                    WHEN LOWER(url) LIKE '%://www.asics.%'              THEN 'asics'
+                    WHEN LOWER(url) LIKE '%://www.hoka.%'               THEN 'hoka'
+                    ELSE brand
+                END
+                WHERE LOWER(url) LIKE ANY (
+                    '%://www.nike.%',
+                    '%://www.adidas.%',
+                    '%://atmos.ph/collections/new-balance/%',
+                    '%://worldbalance.%',
+                    '%://www.asics.%',
+                    '%://www.hoka.%'
+                );
+                "
+        ]
     )
 }}
 
