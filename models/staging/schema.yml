@@ -1,5 +1,13 @@
 version: 2
 
+sources:
+  - name: raw
+    database: PH_SHOES_DB
+    schema: RAW
+    tables:
+      - name: PRODUCT_SHOES_RAW
+        description: "Raw landing table loaded by Snowflake task"
+
 models:
   - name: stg_product_shoes
     description: |
@@ -73,3 +81,5 @@ models:
         description: "Brand extracted in raw landing"
         tests:
           - not_null
+
+

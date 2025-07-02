@@ -18,7 +18,7 @@ with
       age_group,
       brand    as brand_raw,
       loaded_at
-    from {{ source('PH_SHOES_DB','RAW_PRODUCT_SHOES_RAW') }}
+    from {{ source('raw','PRODUCT_SHOES_RAW') }}
   ),
 
   enriched as (
