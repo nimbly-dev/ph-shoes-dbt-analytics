@@ -23,11 +23,6 @@ models:
     raw:
       +schema: RAW
       +materialized: view
-      +pre-hook: 
-        - "COPY INTO RAW.RAW_PRODUCT_SHOES_RAW (id, title, subTitle, url, image, price_sale, price_original, gender, age_group)
-           FROM @RAW.S3_RAW_PRODUCT_SHOES_STAGE
-           FILE_FORMAT = 'RAW.CSV_RAW_FORMAT'
-           ON_ERROR    = 'ABORT_STATEMENT';"
 
     staging:
       +schema: STAGING
