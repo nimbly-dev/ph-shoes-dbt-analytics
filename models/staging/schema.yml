@@ -1,12 +1,5 @@
 version: 2
 
-sources:
-  - name: raw
-    database: PH_SHOES_DB
-    schema: RAW
-    tables:
-      - name: RAW_PRODUCT_SHOES_RAW
-        description: "Raw landing table loaded by Snowflake task"
 
 models:
   - name: stg_product_shoes
