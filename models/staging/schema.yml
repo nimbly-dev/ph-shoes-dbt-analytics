@@ -5,7 +5,7 @@ sources:
     database: PH_SHOES_DB
     schema: RAW
     tables:
-      - name: PRODUCT_SHOES_RAW
+      - name: RAW_PRODUCT_SHOES_RAW
         description: "Raw landing table loaded by Snowflake task"
 
 models:
