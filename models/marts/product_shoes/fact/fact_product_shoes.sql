@@ -8,26 +8,16 @@
 
 WITH raw_data AS (
   SELECT
-    id,
-    title,
-    subtitle,
-    url,
-    image,
-    price_sale,
-    price_original,
-    gender,
-    age_group,
-    brand,
-    dwid,
-    year,
-    month,
-    day
+    id, title, subtitle, url, image,
+    price_sale, price_original,
+    gender, age_group, brand,
+    dwid, year, month, day,
+    extra
   FROM {{ ref('stg_product_shoes') }}
-  {% if is_incremental() and var('year', none) is not none %}
-    WHERE
-      year  = {{ var('year') }}
+  {% if is_incremental() %}
+    WHERE year = {{ var('year') }}
       AND month = {{ var('month') }}
-      AND day   = {{ var('day') }}
+      AND day = {{ var('day') }}
   {% endif %}
 ),
 
@@ -41,19 +31,11 @@ deduped AS (
 final AS (
   SELECT
     brand,
-    dwid,
-    year,
-    month,
-    day,
-    id,
-    title,
-    subtitle,
-    url,
-    image,
-    price_sale,
-    price_original,
-    gender,
-    age_group
+    dwid, year, month, day,
+    id, title, subtitle, url, image,
+    price_sale, price_original,
+    gender, age_group,
+    extra   -- carry it through
   FROM deduped
   WHERE row_num = 1
 )

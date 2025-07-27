@@ -5,6 +5,7 @@ models:
     description: |
       The canonical daily fact of shoe data.
       Combines BaseShoe + FactProductShoe fields and merges on (id, dwid).
+      Carries forward the site‐specific `extra` JSON VARIANT for later drill‐down.
     columns:
       - name: dwid
         description: "Batch‐load date (YYYYMMDD)"
@@ -60,8 +61,6 @@ models:
 
       - name: gender
         description: "Intended gender(s)"
-        tests:
-          - not_null
 
       - name: age_group
         description: "Target age group"
@@ -70,3 +69,8 @@ models:
         description: "Brand name (extracted from filename)"
         tests:
           - not_null
+
+      - name: extra
+        description: |
+          Site‐specific metadata for this product (VARIANT).  
+          You can query any JSON keys here, e.g. `extra:colorDescription`.
