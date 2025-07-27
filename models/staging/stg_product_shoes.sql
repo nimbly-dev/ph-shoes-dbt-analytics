@@ -17,6 +17,7 @@ with
       gender   as gender_raw,
       age_group,
       brand    as brand_raw,
+      extra    as extra_raw,     -- pull in the raw JSON string
       loaded_at
     from {{ ref('raw_product_shoes') }}
   ),
@@ -54,14 +55,18 @@ with
       end as gender,
 
       case
-        when lower(url) like '%://www.nike.%'               then 'nike'
-        when lower(url) like '%://www.adidas.%'             then 'adidas'
+        when lower(url) like '%://www.nike.%'                       then 'nike'
+        when lower(url) like '%://www.adidas.%'                     then 'adidas'
         when lower(url) like '%://atmos.ph/collections/new-balance/%' then 'newbalance'
-        when lower(url) like '%://worldbalance.%'           then 'worldbalance'
-        when lower(url) like '%://www.asics.%'              then 'asics'
-        when lower(url) like '%://www.hoka.%'               then 'hoka'
+        when lower(url) like '%://worldbalance.%'                   then 'worldbalance'
+        when lower(url) like '%://www.asics.%'                      then 'asics'
+        when lower(url) like '%://www.hoka.%'                       then 'hoka'
         else brand_raw
-      end as brand
+      end as brand,
+
+      -- parse the JSON into a VARIANT
+      try_parse_json(extra_raw) as extra
+
     from raw_csv
   ),
 
@@ -70,7 +75,8 @@ with
       dwid, year, month, day,
       id, title, subtitle, url, image,
       price_sale, price_original,
-      gender, age_group, brand
+      gender, age_group, brand,
+      extra
     from enriched
 
     {% if is_incremental() %}

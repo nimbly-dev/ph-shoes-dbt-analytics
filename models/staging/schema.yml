@@ -1,13 +1,12 @@
 version: 2
 
-
 models:
   - name: stg_product_shoes
     description: |
       Standardized staging of product shoes data:
       - reads from RAW.RAW_PRODUCT_SHOES_RAW
       - exposes exactly the BaseShoe + FactProductShoe fields
-      - no extra JSON; no loaded_at
+      - adds the site-specific JSON in `extra`
       - derives dwid/year/month/day
     columns:
       - name: dwid
@@ -75,4 +74,7 @@ models:
         tests:
           - not_null
 
-
+      - name: extra
+        description: |
+          Site‐specific metadata, carried through from the extractor as JSON.
+          Stored as a VARIANT so downstream models can pull out whatever keys they need.
