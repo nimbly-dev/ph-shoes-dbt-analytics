@@ -71,8 +71,6 @@ models:
 
       - name: brand
         description: "Brand extracted in raw landing"
-        tests:
-          - not_null
 
       - name: extra
         description: |

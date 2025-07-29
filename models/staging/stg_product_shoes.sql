@@ -5,6 +5,7 @@
 ) }}
 
 with
+
   raw_csv as (
     select
       id,
@@ -17,7 +18,7 @@ with
       gender   as gender_raw,
       age_group,
       brand    as brand_raw,
-      extra    as extra_raw,     -- pull in the raw JSON string
+      extra    as extra_raw,     -- the JSON string, may be null or invalid
       loaded_at
     from {{ ref('raw_product_shoes') }}
   ),
@@ -55,12 +56,12 @@ with
       end as gender,
 
       case
-        when lower(url) like '%://www.nike.%'                       then 'nike'
-        when lower(url) like '%://www.adidas.%'                     then 'adidas'
+        when lower(url) like '%://www.nike.%'                         then 'nike'
+        when lower(url) like '%://www.adidas.%'                       then 'adidas'
         when lower(url) like '%://atmos.ph/collections/new-balance/%' then 'newbalance'
-        when lower(url) like '%://worldbalance.%'                   then 'worldbalance'
-        when lower(url) like '%://www.asics.%'                      then 'asics'
-        when lower(url) like '%://www.hoka.%'                       then 'hoka'
+        when lower(url) like '%://worldbalance.%'                     then 'worldbalance'
+        when lower(url) like '%://www.asics.%'                        then 'asics'
+        when lower(url) like '%://www.hoka.%'                         then 'hoka'
         else brand_raw
       end as brand,
 
@@ -70,6 +71,14 @@ with
     from raw_csv
   ),
 
+  -- drop any rows whose raw extra_raw is non-null but invalid JSON
+  filtered as (
+    select *
+    from enriched
+    where extra_raw is null
+       or extra is not null
+  ),
+
   to_load as (
     select
       dwid, year, month, day,
@@ -77,7 +86,7 @@ with
       price_sale, price_original,
       gender, age_group, brand,
       extra
-    from enriched
+    from filtered
 
     {% if is_incremental() %}
       where dwid > coalesce((select max(dwid) from {{ this }}), '00000000')
