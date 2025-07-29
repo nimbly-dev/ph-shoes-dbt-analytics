@@ -10,13 +10,13 @@ with raw_csv as (
     title,
     subtitle,
     url,
-    nullif(image, '')          as image,
+    nullif(image, '')        as image,
     price_sale,
     price_original,
     gender    as gender_raw,
     age_group,
     brand     as brand_raw,
-    extra     as extra_raw,    -- incoming JSON string (nullable)
+    extra     as extra_raw,  -- incoming JSON string or free text
     loaded_at
   from {{ ref('raw_product_shoes') }}
 ),
@@ -63,11 +63,12 @@ enriched as (
       else brand_raw
     end                                                        as brand,
 
-    -- only turn extra_raw into VARIANT when its valid JSON; else NULL
+    -- only drop into real JSON when extra_raw parses cleanly;
+    -- otherwise emit an empty object {} (so downstream can still query `extra.someKey`)
     case
-      when extra_raw is null then null
-      when try_parse_json(extra_raw) is not null then try_parse_json(extra_raw)
-      else null
+      when extra_raw is null or extra_raw = ''              then null
+      when try_parse_json(extra_raw) is not null             then try_parse_json(extra_raw)
+      else parse_json('{}')
     end                                                        as extra
 
   from raw_csv
