@@ -18,7 +18,7 @@ clean-targets:
 
 
 models:
-  ph-shoes-dbt-analytics:
+  ph_shoes_analytics:
 
     raw:
       +schema: RAW
@@ -36,7 +36,7 @@ models:
       +materialized: table
 
 seeds:
-  ph-shoes-dbt-analytics:
+  ph_shoes_analytics:
     +schema: PRODUCTION_MARTS
     +quote_columns: false
     shoe_size_map:
