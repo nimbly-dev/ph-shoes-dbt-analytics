@@ -37,7 +37,7 @@ models:
 
 seeds:
   ph-shoes-dbt-analytics:
-    +schema: staging
+    +schema: PRODUCTION
     +quote_columns: false
     shoe_size_map:
       +column_types:
