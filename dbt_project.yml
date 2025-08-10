@@ -34,3 +34,19 @@ models:
     marts:
       +schema: MARTS
       +materialized: table
+
+seeds:
+  ph-shoes-dbt-analytics:
+    +schema: staging
+    +quote_columns: false
+    shoe_size_map:
+      +column_types:
+        brand: varchar
+        category: varchar
+        gender: varchar
+        us: varchar
+        uk: float
+        eu: float
+        mondo_cm: float
+        source_label: varchar
+        nike_url: varchar
