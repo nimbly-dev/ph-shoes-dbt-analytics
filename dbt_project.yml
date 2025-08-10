@@ -37,7 +37,7 @@ models:
 
 seeds:
   ph_shoes_analytics:
-    +schema: PRODUCTION_MARTS
+    +schema: MARTS
     +quote_columns: false
     shoe_size_map:
       +column_types:
