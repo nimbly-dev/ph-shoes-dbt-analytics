@@ -18,8 +18,8 @@ models:
       - name: dwid
         description: "Batch-load date (YYYYMMDD)"
         tests:
-          - not_null
           - unique
+          - not_null
 
       - name: year
         description: "Batch-load year"
