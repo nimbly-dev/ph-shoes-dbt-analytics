@@ -36,7 +36,7 @@ raw_csv AS (
 -- 2A) Normalize base fields: build date parts and VARIANT extra
 enriched_a AS (
   SELECT
-    ymd,  -- from raw_csv
+    ymd,  -- from raw_csv (don’t recompute)
     EXTRACT(year  FROM loaded_at)::int    AS year,
     EXTRACT(month FROM loaded_at)::int    AS month,
     EXTRACT(day   FROM loaded_at)::int    AS day,
@@ -85,10 +85,9 @@ enriched_a AS (
   FROM raw_csv
 ),
 
--- 2B) Compute gender and final DWID = id||YYYYMMDD (globally unique & replaceable)
+-- 2B) Compute gender and final DWID = id||YYYYMMDD (globally unique per product/day)
 enriched AS (
   SELECT
-    /* Globally unique per product per day */
     (id || ymd)                             AS dwid,
 
     year, month, day, date_key,
@@ -119,7 +118,7 @@ categorized_a AS (
   FROM enriched e
 ),
 
--- 3B) Canonical group (men|women|kids) for size mapping
+-- 3B) Canonical group (men|women|kids)
 categorized AS (
   SELECT
     c.*,
@@ -131,26 +130,29 @@ categorized AS (
   FROM categorized_a c
 ),
 
--- 4) CSV size map (UK/EU/CM → US), canonicalize category for the join
-size_map AS (
+-- 4) Grouped size map (men/women/kids) from seed
+size_map_raw AS (
   SELECT
-    lower(replace(brand, ' ', ''))  AS brand_key,
-    CASE
-      WHEN lower(category) IN ('men','mens','male','m','men-shoes') THEN 'men'
-      WHEN lower(category) IN ('women','womens','female','f','women-shoes') THEN 'women'
-      WHEN lower(category) IN (
-          'kids','kid','children','child','youth',
-          'older-kids-shoes','little-kids-shoes','baby-toddlers-shoes',
-          'boys','girls'
-      ) THEN 'kids'
-      ELSE lower(category)
-    END AS cat_group,
-    lower(gender)                   AS gender_map,
+    lower(grp)         AS grp,
     us,
-    uk::float         AS uk,
-    eu::float         AS eu,
-    mondo_cm::float   AS cm
+    uk::float          AS uk,
+    eu::float          AS eu,
+    mondo_cm::float    AS cm,
+    CASE WHEN upper(us) LIKE '%Y' OR upper(us) LIKE '%C' THEN 2 ELSE 1 END AS pref_rank
   FROM {{ ref('shoe_size_map') }}
+),
+size_map AS (
+  SELECT grp, us, uk, eu, cm
+  FROM (
+    SELECT
+      grp, us, uk, eu, cm,
+      row_number() OVER (
+        PARTITION BY grp, uk, eu, cm
+        ORDER BY pref_rank ASC
+      ) AS rn
+    FROM size_map_raw
+  )
+  WHERE rn = 1
 ),
 
 -- 5) Flatten sizes from extra (VARIANT) — support extra.sizes or extra.variants[*].size
@@ -171,69 +173,65 @@ sizes_flat AS (
   ) f
 ),
 
--- 6) Parse & detect size system
+-- 6) Parse & detect size system (no "bare number = US")
 sizes_parsed AS (
   SELECT
     s.*,
     upper(trim(size_raw)) AS size_u,
 
-    -- Kids: "1Y", "12C", or "1 Y"/"12 C"
-    iff(regexp_like(size_u, '([0-9]+(\\.[0-9])?)\\s*[YC]$'),
-        regexp_replace(size_u, '.*?([0-9]+(\\.[0-9])?)\\s*([YC])$', '\\1\\3'),
+    /* kids US like 1Y / 12C (with optional space) */
+    iff(regexp_like(size_u, '([0-9]+(\.[0-9])?)\s*[YC]$'),
+        regexp_replace(size_u, '.*?([0-9]+(\.[0-9])?)\s*([YC])$', '\\1\\3'),
         NULL) AS us_kids,
 
-    -- Adult US: explicit "US" anywhere OR bare number if adult group
-    iff(
-      regexp_like(size_u, '\\bUS\\b')
-      OR (regexp_like(size_u, '^[0-9]+(\\.[0-9])?$') AND conv_group IN ('men','women')),
-      regexp_substr(size_u, '([0-9]+(\\.[0-9])?)', 1, 1, 'e', 1),
-      NULL
-    ) AS us_adult,
+    /* token flags (loosen UK to catch 'UK5' too) */
+    iff(regexp_like(size_u, 'US'),      1, 0) AS has_us,
+    iff(regexp_like(size_u, 'UK'),      1, 0) AS has_uk,
+    iff(regexp_like(size_u, '(EU|EUR)'),1, 0) AS has_eu,
+    iff(regexp_like(size_u, '(CM|MONDO|JP)'), 1, 0) AS has_cm,
 
-    -- UK/EU/CM numbers
-    iff(regexp_like(size_u, '\\bUK\\b'),
-        regexp_substr(size_u, '([0-9]+(\\.[0-9])?)', 1, 1, 'e', 1), NULL) AS uk_str,
-
-    iff(regexp_like(size_u, '\\b(EU|EUR)\\b'),
-        regexp_substr(size_u, '([0-9]+(\\.[0-9])?)', 1, 1, 'e', 1), NULL) AS eu_str,
-
-    iff(regexp_like(size_u, '\\b(CM|MONDO|JP)\\b'),
-        regexp_substr(size_u, '([0-9]+(\\.[0-9])?)', 1, 1, 'e', 1), NULL) AS cm_str
+    /* numeric anywhere */
+    try_to_decimal(regexp_substr(size_u, '([0-9]+(\.[0-9])?)', 1, 1, 'e', 1)) AS raw_num
   FROM sizes_flat s
 ),
 
--- 7) Decide source system + numeric helpers
+-- 7) Decide source system + numeric helpers (bare-number => NUM)
 sizes_typed AS (
   SELECT
     p.*,
     CASE
-      WHEN p.us_kids  IS NOT NULL THEN 'US'
-      WHEN p.us_adult IS NOT NULL THEN 'US'
-      WHEN p.uk_str   IS NOT NULL THEN 'UK'
-      WHEN p.eu_str   IS NOT NULL THEN 'EU'
-      WHEN p.cm_str   IS NOT NULL THEN 'CM'
+      WHEN p.us_kids IS NOT NULL THEN 'US'
+      WHEN p.has_us = 1          THEN 'US'
+      WHEN p.has_uk = 1          THEN 'UK'
+      WHEN p.has_eu = 1          THEN 'EU'
+      WHEN p.has_cm = 1          THEN 'CM'
+      WHEN p.raw_num IS NOT NULL THEN 'NUM'   -- unknown system, map via EU/UK/CM
       ELSE NULL
     END AS size_system,
-    try_to_decimal(p.us_adult) AS us_adult_num,
-    try_to_decimal(p.uk_str)   AS uk_num,
-    try_to_decimal(p.eu_str)   AS eu_num,
-    try_to_decimal(p.cm_str)   AS cm_num
+
+    CASE WHEN p.has_us = 1 THEN p.raw_num END AS us_adult_num,
+    CASE WHEN p.has_uk = 1 THEN p.raw_num END AS uk_num,
+    CASE WHEN p.has_eu = 1 THEN p.raw_num END AS eu_num,
+    CASE WHEN p.has_cm = 1 THEN p.raw_num END AS cm_num
   FROM sizes_parsed p
 ),
 
--- 8) Map non-US → US via seed (brand_key + cat_group + numeric value)
+-- 8) Map non-US (and NUM-only) → US via numeric pairs, by group
 sizes_mapped AS (
   SELECT
     t.*,
     m.us AS us_from_map
   FROM sizes_typed t
   LEFT JOIN size_map m
-    ON m.brand_key = t.brand_key
-   AND m.cat_group = t.conv_group
+    ON m.grp = t.conv_group
    AND (
-        (t.size_system = 'UK' AND m.uk = t.uk_num)
-     OR (t.size_system = 'EU' AND m.eu = t.eu_num)
-     OR (t.size_system = 'CM' AND abs(m.cm - t.cm_num) <= 0.1)
+         (t.size_system = 'UK'  AND m.uk = t.uk_num)
+      OR (t.size_system = 'EU'  AND m.eu = t.eu_num)
+      OR (t.size_system = 'CM'  AND abs(m.cm - t.cm_num) <= 0.1)
+      -- bare numbers (e.g. "45"): try EU, then UK, then CM
+      OR (t.size_system = 'NUM' AND m.eu = t.raw_num)
+      OR (t.size_system = 'NUM' AND m.uk = t.raw_num)
+      OR (t.size_system = 'NUM' AND abs(m.cm - t.raw_num) <= 0.1)
    )
 ),
 
@@ -265,7 +263,7 @@ sizes_agg AS (
   GROUP BY dwid, id
 ),
 
--- 11) Final projection + ensure non-null gender and overwrite extra.sizes
+-- 11) Final projection + ensure non-null gender and ALWAYS overwrite extra.sizes
 to_load AS (
   SELECT
     e.dwid, e.year, e.month, e.day,
@@ -283,18 +281,18 @@ to_load AS (
     e.age_group,
     e.brand,
 
-    CASE
-      WHEN sa.sizes_us IS NOT NULL
-        THEN object_insert(coalesce(e.extra, parse_json('{}')), 'sizes', sa.sizes_us, TRUE)
-      ELSE e.extra
-    END AS extra
+    object_insert(
+      coalesce(e.extra, parse_json('{}')),
+      'sizes',
+      coalesce(sa.sizes_us, array_construct()),
+      TRUE
+    ) AS extra
 
   FROM categorized e
   LEFT JOIN sizes_agg sa
     ON sa.dwid = e.dwid AND sa.id = e.id
 
   {% if is_incremental() %}
-    -- Prune to only rows newer than what target already has (by date, not dwid prefix)
     WHERE e.date_key > coalesce((SELECT max(year*10000+month*100+day) FROM {{ this }}), 0)
       AND e.price_original <> 0
   {% else %}
