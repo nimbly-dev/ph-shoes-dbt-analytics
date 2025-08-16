@@ -1,169 +1,47 @@
-brand,category,gender,us,uk,eu,mondo_cm,source_label,nike_url
-adidas,baby-toddlers-shoes,toddlers,3C,2.5,18.0,,3C,
-adidas,baby-toddlers-shoes,toddlers,4C,3.5,19.0,,4C,
-adidas,baby-toddlers-shoes,toddlers,5C,4.5,20.0,,5C,
-adidas,men-shoes,men,6,5.0,37.5,23.7,6 US,
-adidas,men-shoes,men,6.5,5.5,38.0,24.1,6.5 US,
-adidas,men-shoes,men,7,6.0,39.0,24.6,7 US,
-adidas,men-shoes,men,7.5,6.5,39.5,25.0,7.5 US,
-adidas,men-shoes,men,8,7.0,40.0,25.4,8 US,
-adidas,men-shoes,men,8.5,7.5,40.5,25.8,8.5 US,
-adidas,men-shoes,men,9,8.0,41.5,26.3,9 US,
-adidas,men-shoes,men,9.5,8.5,42.0,26.7,9.5 US,
-adidas,men-shoes,men,10,9.0,42.5,27.1,10 US,
-adidas,men-shoes,men,10.5,9.5,43.5,27.5,10.5 US,
-adidas,men-shoes,men,11,10.0,44.0,28.0,11 US,
-adidas,men-shoes,men,11.5,10.5,44.5,28.4,11.5 US,
-adidas,men-shoes,men,12,11.0,45.0,28.8,12 US,
-adidas,men-shoes,men,12.5,11.5,46.0,29.2,12.5 US,
-adidas,men-shoes,men,13,12.0,46.5,29.6,13 US,
-adidas,older-kids-shoes,kids,10Y,9.5,42.0,,10Y,
-adidas,older-kids-shoes,kids,11Y,10.5,43.0,,11Y,
-adidas,older-kids-shoes,kids,12Y,11.5,44.0,,12Y,
-adidas,older-kids-shoes,kids,13Y,12.5,45.0,,13Y,
-adidas,women-shoes,women,5,3.0,35.0,22.0,5 US,
-adidas,women-shoes,women,5.5,3.5,35.5,22.4,5.5 US,
-adidas,women-shoes,women,6,4.0,36.5,22.9,6 US,
-adidas,women-shoes,women,6.5,4.5,37.0,23.3,6.5 US,
-adidas,women-shoes,women,7,5.0,37.5,23.7,7 US,
-adidas,women-shoes,women,7.5,5.5,38.0,24.1,7.5 US,
-adidas,women-shoes,women,8,6.0,39.0,24.6,8 US,
-adidas,women-shoes,women,8.5,6.5,39.5,25.0,8.5 US,
-adidas,women-shoes,women,9,7.0,40.0,25.4,9 US,
-adidas,women-shoes,women,9.5,7.5,40.5,25.8,9.5 US,
-adidas,women-shoes,women,10,8.0,41.5,26.3,10 US,
-hoka,men-shoes,men,6,5.0,37.5,23.7,6 US,
-hoka,men-shoes,men,6.5,5.5,38.0,24.1,6.5 US,
-hoka,men-shoes,men,7,6.0,39.0,24.6,7 US,
-hoka,men-shoes,men,7.5,6.5,39.5,25.0,7.5 US,
-hoka,men-shoes,men,8,7.0,40.0,25.4,8 US,
-hoka,men-shoes,men,8.5,7.5,40.5,25.8,8.5 US,
-hoka,men-shoes,men,9,8.0,41.5,26.3,9 US,
-hoka,men-shoes,men,9.5,8.5,42.0,26.7,9.5 US,
-hoka,men-shoes,men,10,9.0,42.5,27.1,10 US,
-hoka,men-shoes,men,10.5,9.5,43.5,27.5,10.5 US,
-hoka,men-shoes,men,11,10.0,44.0,28.0,11 US,
-hoka,men-shoes,men,11.5,10.5,44.5,28.4,11.5 US,
-hoka,men-shoes,men,12,11.0,45.0,28.8,12 US,
-hoka,men-shoes,men,13,12.0,46.5,29.6,13 US,
-new balance,men-shoes,men,4,3.0,35.0,22.0,4 US,
-new balance,men-shoes,men,4.5,3.5,35.5,22.4,4.5 US,
-new balance,men-shoes,men,5,4.0,36.5,22.9,5 US,
-new balance,men-shoes,men,5.5,4.5,37.0,23.3,5.5 US,
-new balance,men-shoes,men,6,5.0,37.5,23.7,6 US,
-new balance,men-shoes,men,6.5,5.5,38.0,24.1,6.5 US,
-new balance,men-shoes,men,7,6.0,39.0,24.6,7 US,
-new balance,men-shoes,men,7.5,6.5,39.5,25.0,7.5 US,
-new balance,men-shoes,men,8,7.0,40.0,25.4,8 US,
-new balance,men-shoes,men,8.5,7.5,40.5,25.8,8.5 US,
-new balance,men-shoes,men,9,8.0,41.5,26.3,9 US,
-new balance,men-shoes,men,9.5,8.5,42.0,26.7,9.5 US,
-new balance,men-shoes,men,10,9.0,42.5,27.1,10 US,
-new balance,men-shoes,men,10.5,9.5,43.5,27.5,10.5 US,
-new balance,men-shoes,men,11,10.0,44.0,28.0,11 US,
-new balance,men-shoes,men,11.5,10.5,44.5,28.4,11.5 US,
-new balance,men-shoes,men,12,11.0,45.0,28.8,12 US,
-new balance,men-shoes,men,12.5,11.5,46.0,29.2,12.5 US,
-new balance,men-shoes,men,13,12.0,46.5,29.6,13 US,
-new balance,women-shoes,women,5,3.0,35.0,22.0,5 US,
-new balance,women-shoes,women,5.5,3.5,35.5,22.4,5.5 US,
-new balance,women-shoes,women,6,4.0,36.5,22.9,6 US,
-new balance,women-shoes,women,6.5,4.5,37.0,23.3,6.5 US,
-new balance,women-shoes,women,7,5.0,37.5,23.7,7 US,
-new balance,women-shoes,women,7.5,5.5,38.0,24.1,7.5 US,
-new balance,women-shoes,women,8,6.0,39.0,24.6,8 US,
-new balance,women-shoes,women,8.5,6.5,39.5,25.0,8.5 US,
-new balance,women-shoes,women,9,7.0,40.0,25.4,9 US,
-new balance,women-shoes,women,9.5,7.5,40.5,25.8,9.5 US,
-new balance,women-shoes,women,10,8.0,41.5,26.3,10 US,
-nike,baby-toddlers-shoes,toddlers,2C,1.5,17.0,,2 C,/w/baby-toddlers-kids-shoes-2j488za7hnezv4dhzy7ok
-nike,baby-toddlers-shoes,toddlers,3C,2.5,18.0,,3 C,/w/baby-toddlers-kids-shoes-2j488z5mg8fzv4dhzy7ok
-nike,baby-toddlers-shoes,toddlers,4C,3.5,19.0,,4 C,/w/baby-toddlers-kids-shoes-2j488z32xf6zv4dhzy7ok
-nike,baby-toddlers-shoes,toddlers,5C,4.5,20.0,,5 C,/w/baby-toddlers-kids-shoes-204f8z2j488zv4dhzy7ok
-nike,baby-toddlers-shoes,toddlers,6C,5.5,22.0,,6 C,/w/baby-toddlers-kids-shoes-2j488z8b77nzv4dhzy7ok
-nike,baby-toddlers-shoes,toddlers,7C,6.5,23.5,,7 C,/w/baby-toddlers-kids-shoes-2ggmfz2j488zv4dhzy7ok
-nike,baby-toddlers-shoes,toddlers,8C,7.5,25.0,,8 C,/w/baby-toddlers-kids-shoes-2j488z8ri95zv4dhzy7ok
-nike,baby-toddlers-shoes,toddlers,9C,8.5,26.0,,9 C,/w/baby-toddlers-kids-shoes-2j488z8r17kzv4dhzy7ok
-nike,baby-toddlers-shoes,toddlers,10C,9.5,27.0,,10 C,/w/baby-toddlers-kids-shoes-2j488z4f4hazv4dhzy7ok
-nike,little-kids-shoes,kids,1Y,13.5,32.0,,1 Y,/w/little-kids-shoes-51udiz6dacezv4dhzy7ok
-nike,little-kids-shoes,kids,1.5Y,1.0,33.0,,1.5 Y,/w/little-kids-shoes-3quq7z6dacezv4dhzy7ok
-nike,little-kids-shoes,kids,2Y,1.5,33.5,,2 Y,/w/little-kids-shoes-6daceza9ncqzv4dhzy7ok
-nike,little-kids-shoes,kids,2.5Y,2.0,34.0,,2.5 Y,/w/little-kids-shoes-6dacez6hvv3zv4dhzy7ok
-nike,little-kids-shoes,kids,3Y,2.5,35.0,,3 Y,/w/little-kids-shoes-6dacez75n0izagibjzv4dhzy7ok
-nike,little-kids-shoes,kids,8C,7.5,25.0,,8 C,/w/little-kids-shoes-6dacez8ri95zv4dhzy7ok
-nike,little-kids-shoes,kids,9C,8.5,26.0,,9 C,/w/little-kids-shoes-6dacez8r17kzv4dhzy7ok
-nike,little-kids-shoes,kids,10C,9.5,27.0,,10 C,/w/little-kids-shoes-4f4haz6dacezv4dhzy7ok
-nike,little-kids-shoes,kids,10.5C,10.0,27.5,,10.5 C,/w/little-kids-shoes-6dacez8eap3zv4dhzy7ok
-nike,little-kids-shoes,kids,11C,10.5,28.0,,11 C,/w/little-kids-shoes-1ang5z6dacezv4dhzy7ok
-nike,little-kids-shoes,kids,11.5C,11.0,28.5,,11.5 C,/w/little-kids-shoes-1o9cuz6dacezv4dhzy7ok
-nike,little-kids-shoes,kids,12C,11.5,29.5,,12 C,/w/little-kids-shoes-2sv6bz6dacezv4dhzy7ok
-nike,little-kids-shoes,kids,12.5C,12.0,30.0,,12.5 C,/w/little-kids-shoes-3gquuz6dacezv4dhzy7ok
-nike,little-kids-shoes,kids,13C,12.5,31.0,,13 C,/w/little-kids-shoes-3bgsfz6dacezv4dhzy7ok
-nike,little-kids-shoes,kids,13.5C,13.0,31.5,,13.5 C,/w/little-kids-shoes-26bdlz6dacezv4dhzy7ok
-nike,men-shoes,men,3.0,2.0,33.5,21.2,3 US,/w/mens-shoes-1v44nznik1zy7ok
-nike,men-shoes,men,3.5,2.5,34.5,21.6,3.5 US,/w/mens-shoes-1hsnhznik1zy7ok
-nike,men-shoes,men,4.0,3.0,35.0,22.0,4 US,/w/mens-shoes-4bkcbznik1zy7ok
-nike,men-shoes,men,4.5,3.5,35.5,22.4,4.5 US,/w/mens-shoes-8xhrhznik1zy7ok
-nike,men-shoes,men,5.0,4.0,36.5,22.9,5 US,/w/mens-shoes-nik1zv660zy7ok
-nike,men-shoes,men,5.5,4.5,37.0,23.3,5.5 US,/w/mens-shoes-8slorznik1zy7ok
-nike,men-shoes,men,6.0,5.0,37.5,23.7,6 US,/w/mens-shoes-5sx0aznik1zy7ok
-nike,men-shoes,men,6.5,5.5,38.0,24.1,6.5 US,/w/mens-shoes-9ms5qznik1zy7ok
-nike,men-shoes,men,7.0,6.0,39.0,24.6,7 US,/w/mens-shoes-8nb9wznik1zy7ok
-nike,men-shoes,men,7.5,6.5,39.5,25.0,7.5 US,/w/mens-shoes-40x25znik1zy7ok
-nike,men-shoes,men,8.0,7.0,40.0,25.4,8 US,/w/mens-shoes-8ucbuznik1zy7ok
-nike,men-shoes,men,8.5,7.5,40.5,25.8,8.5 US,/w/mens-shoes-nik1zqrpuzy7ok
-nike,men-shoes,men,9.0,8.0,41.5,26.3,9 US,/w/mens-shoes-nik1zstp2zy7ok
-nike,men-shoes,men,9.5,8.5,42.0,26.7,9.5 US,/w/mens-shoes-38l5kznik1zy7ok
-nike,men-shoes,men,10.0,9.0,42.5,27.1,10 US,/w/mens-shoes-2eqihznik1zy7ok
-nike,men-shoes,men,10.5,9.5,43.5,27.5,10.5 US,/w/mens-shoes-4heq9znik1zy7ok
-nike,men-shoes,men,11.0,10.0,44.0,28.0,11 US,/w/mens-shoes-79n0gznik1zy7ok
-nike,men-shoes,men,11.5,10.5,44.5,28.4,11.5 US,/w/mens-shoes-hrcoznik1zy7ok
-nike,men-shoes,men,12.0,11.0,45.0,28.8,12 US,/w/mens-shoes-1m67gznik1zy7ok
-nike,men-shoes,men,12.5,11.5,46.0,29.2,12.5 US,/w/mens-shoes-apms5znik1zy7ok
-nike,men-shoes,men,13.0,12.0,46.5,29.6,13 US,/w/mens-shoes-9hh0lznik1zy7ok
-nike,men-shoes,men,13.5,12.5,47.0,30.1,13.5 US,/w/mens-shoes-3phogznik1zy7ok
-nike,men-shoes,men,14.0,13.0,47.5,30.5,14 US,/w/mens-shoes-6xge1znik1zy7ok
-nike,men-shoes,men,15.0,14.0,49.0,31.3,15 US,/w/mens-shoes-6m79uznik1zy7ok
-nike,men-shoes,men,16.0,15.0,50.5,32.2,16 US,/w/mens-shoes-1je5yznik1zy7ok
-nike,men-shoes,men,17.0,16.0,51.5,33.0,17 US,/w/mens-shoes-48901znik1zy7ok
-nike,men-shoes,men,18.0,17.0,53.0,33.9,18 US,/w/mens-shoes-5pxh3znik1zy7ok
-nike,older-kids-shoes,kids,1Y,13.5,32.0,,1 Y,/w/older-kids-shoes-51udizagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,1.5Y,1.0,33.0,,1.5 Y,/w/older-kids-shoes-3quq7zagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,2Y,1.5,33.5,,2 Y,/w/older-kids-shoes-a9ncqzagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,2.5Y,2.0,34.0,,2.5 Y,/w/older-kids-shoes-6hvv3zagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,3Y,2.5,35.0,,3 Y,/w/older-kids-shoes-75n0izagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,3.5Y,3.0,35.5,,3.5 Y,/w/older-kids-shoes-681nlzagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,4Y,3.5,36.0,,4 Y,/w/older-kids-shoes-a86mozagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,4.5Y,4.0,36.5,,4.5 Y,/w/older-kids-shoes-8f8l9zagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,5Y,4.5,37.5,,5 Y,/w/older-kids-shoes-21f2mzagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,5.5Y,5.0,38.0,,5.5 Y,/w/older-kids-shoes-5vs8dzagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,6Y,5.5,38.5,,6 Y,/w/older-kids-shoes-6518wzagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,6.5Y,6.0,39.0,,6.5 Y,/w/older-kids-shoes-70asdzagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,7Y,6.0,40.0,,7 Y,/w/older-kids-shoes-8efwtzagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,11C,10.5,28.0,,11 C,/w/older-kids-shoes-1ang5zagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,12C,11.5,29.5,,12 C,/w/older-kids-shoes-2sv6bzagibjzv4dhzy7ok
-nike,older-kids-shoes,kids,13C,12.5,31.0,,13 C,/w/older-kids-shoes-3bgsfzagibjzv4dhzy7ok
-nike,women-shoes,women,4.5,2.5,34.5,21.6,4.5 US,/w/womens-shoes-5e1x6z7sfsyzy7ok
-nike,women-shoes,women,5.0,3.0,35.0,22.0,5 US,/w/womens-shoes-5e1x6zb2h62zy7ok
-nike,women-shoes,women,5.5,3.5,35.5,22.4,5.5 US,/w/womens-shoes-5e1x6zy7okzyt35
-nike,women-shoes,women,6.0,4.0,36.5,22.9,6 US,/w/womens-shoes-4i7w1z5e1x6zy7ok
-nike,women-shoes,women,6.5,4.5,37.0,23.3,6.5 US,/w/womens-shoes-5e1x6z77ghyzy7ok
-nike,women-shoes,women,7.0,5.0,37.5,23.7,7 US,/w/womens-shoes-5e1x6zvyaizy7ok
-nike,women-shoes,women,7.5,5.5,38.0,24.1,7.5 US,/w/womens-shoes-5e1x6z6p31wzy7ok
-nike,women-shoes,women,8.0,6.0,39.0,24.6,8 US,/w/womens-shoes-5e1x6zom6bzy7ok
-nike,women-shoes,women,8.5,6.5,39.5,25.0,8.5 US,/w/womens-shoes-1cssqz5e1x6zy7ok
-nike,women-shoes,women,9.0,7.0,40.0,25.4,9 US,/w/womens-shoes-5e1x6z7p17azy7ok
-nike,women-shoes,women,9.5,7.5,40.5,25.8,9.5 US,/w/womens-shoes-200vmz5e1x6zy7ok
-nike,women-shoes,women,10.0,8.0,41.5,26.3,10 US,/w/womens-shoes-5e1x6z7xrj1zy7ok
-nike,women-shoes,women,10.5,8.5,42.0,26.7,10.5 US,/w/womens-shoes-56vxcz5e1x6zy7ok
-nike,women-shoes,women,11.0,9.0,42.5,27.1,11 US,/w/womens-shoes-5bmh1z5e1x6zy7ok
-nike,women-shoes,women,11.5,9.5,43.5,27.5,11.5 US,/w/womens-shoes-3ms32z5e1x6zy7ok
-nike,women-shoes,women,12.0,10.0,44.0,28.0,12 US,/w/womens-shoes-5e1x6z5jjvbzy7ok
-nike,women-shoes,women,12.5,10.5,44.5,28.4,12.5 US,/w/womens-shoes-5e1x6z6ch1jzy7ok
-nike,women-shoes,women,13.0,11.0,45.0,28.8,13 US,/w/womens-shoes-5e1x6zb1xcizy7ok
-nike,women-shoes,women,13.5,11.5,46.0,29.2,13.5 US,/w/womens-shoes-5e1x6zgq8xzy7ok
-nike,women-shoes,women,14.0,12.0,46.5,29.6,14 US,/w/womens-shoes-5e1x6z88difzy7ok
-nike,women-shoes,women,14.5,12.5,47.0,30.1,14.5 US,/w/womens-shoes-5e1x6z5rl2czy7ok
-nike,women-shoes,women,15.0,13.0,47.5,30.5,15 US,/w/womens-shoes-5e1x6z9pl4gzy7ok
-nike,women-shoes,women,15.5,13.5,48.5,30.9,15.5 US,/w/womens-shoes-5e1x6z72tdlzy7ok
-nike,women-shoes,women,16.5,14.5,49.5,31.8,16.5 US,/w/womens-shoes-4les7z5e1x6zy7ok
+grp,us,uk,eu,mondo_cm
+men,5.0,4.5,37.5,
+men,5.5,5.0,38.0,
+men,6.0,5.5,39.0,
+men,6.5,6.0,39.5,
+men,7.0,6.5,40.0,
+men,7.5,7.0,40.5,
+men,8.0,7.5,41.0,
+men,8.5,8.0,42.0,
+men,9.0,8.5,42.5,
+men,9.5,9.0,43.0,
+men,10.0,9.5,44.0,
+men,10.5,10.0,44.5,
+men,11.0,10.5,45.0,
+men,11.5,11.0,45.5,
+men,12.0,11.5,46.0,
+men,13.0,12.5,47.5,
+men,14.0,13.5,49.0,
+women,4.0,2.0,35.0,
+women,4.5,2.5,35.5,
+women,5.0,3.0,36.0,
+women,5.5,3.5,36.5,
+women,6.0,4.0,37.0,
+women,6.5,4.5,37.5,
+women,7.0,5.0,38.0,
+women,7.5,5.5,38.5,
+women,8.0,6.0,39.0,
+women,8.5,6.5,40.0,
+women,9.0,7.0,40.5,
+women,9.5,7.5,41.0,
+women,10.0,8.0,42.0,
+women,10.5,8.5,42.5,
+women,11.0,9.0,43.0,
+women,12.0,10.0,44.0,
+kids,1Y,13.0,32.0,
+kids,1.5Y,13.5,33.0,
+kids,2Y,1.0,33.5,
+kids,2.5Y,1.5,34.0,
+kids,3Y,2.0,35.0,
+kids,3.5Y,2.5,35.5,
+kids,4Y,3.0,36.0,
+kids,4.5Y,3.5,36.5,
+kids,5Y,4.0,37.0,
+kids,5.5Y,4.5,37.5,
+kids,6Y,5.0,38.0,
+kids,6.5Y,5.5,38.5,
+kids,7Y,6.0,39.0,
