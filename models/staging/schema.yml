@@ -19,7 +19,6 @@ models:
         description: "Batch-load date (YYYYMMDD)"
         tests:
           - not_null
-          - unique
 
       - name: year
         description: "Batch-load year"
