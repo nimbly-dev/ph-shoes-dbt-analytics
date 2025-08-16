@@ -4,7 +4,9 @@
     unique_key = ["id","dwid"]
 ) }}
 
--- 1) Read RAW
+-- ============================================================================
+-- 1) READ RAW
+-- ============================================================================
 with raw_csv as (
   select
     id,
@@ -22,7 +24,9 @@ with raw_csv as (
   from {{ ref('raw_product_shoes') }}
 ),
 
--- 2) Normalize base fields
+-- ============================================================================
+-- 2) NORMALIZE BASE FIELDS
+-- ============================================================================
 enriched as (
   select
     to_char(date_trunc('day', loaded_at), 'YYYYMMDD')   as dwid,
@@ -39,6 +43,7 @@ enriched as (
     price_original,
     age_group,
 
+    /* gender_raw can be CSV/JSON or single string */
     case
       when try_parse_json(gender_raw) is not null
            and typeof(try_parse_json(gender_raw)) = 'ARRAY'
@@ -55,6 +60,7 @@ enriched as (
       else null
     end                                                 as gender,
 
+    /* Normalize brand based on URL domain first; else keep provided brand_raw */
     case
       when lower(url) like '%://www.nike.%'                          then 'nike'
       when lower(url) like '%://www.adidas.%'                        then 'adidas'
@@ -62,21 +68,25 @@ enriched as (
       when lower(url) like '%://worldbalance.%'                      then 'worldbalance'
       when lower(url) like '%://www.asics.%'                         then 'asics'
       when lower(url) like '%://www.hoka.%'                          then 'hoka'
-      else coalesce(lower(brand_raw), brand_raw)
+      else coalesce(lower(replace(brand_raw,' ','')), lower(brand_raw))
     end                                                 as brand,
 
+    /* EXTRAS: ensure VARIANT; if string JSON parse, else empty object */
     case
-      when extra_raw is null or extra_raw = ''        then null
+      when extra_raw is null or extra_raw = ''        then parse_json('{}')
       when try_parse_json(extra_raw) is not null       then try_parse_json(extra_raw)
       else parse_json('{}')
     end                                                 as extra
   from raw_csv
 ),
 
--- 3) Category + brand key for mapping
+-- ============================================================================
+-- 3) CATEGORY + brand key + CANONICAL GROUP
+-- ============================================================================
 categorized as (
   select
     e.*,
+    /* map to a site-style category for reference */
     case
       when age_group ilike 'older%'                              then 'older-kids-shoes'
       when age_group ilike 'little%'                             then 'little-kids-shoes'
@@ -84,15 +94,35 @@ categorized as (
       when coalesce(gender,'') = 'women'                         then 'women-shoes'
       else 'men-shoes'
     end as conv_category,
+    /* canonical group for size map join */
+    case
+      when coalesce(gender,'') = 'women' then 'women'
+      when conv_category in ('older-kids-shoes','little-kids-shoes','baby-toddlers-shoes') then 'kids'
+      else 'men'
+    end as conv_group,
     lower(replace(brand, ' ', '')) as brand_key
   from enriched e
 ),
 
--- 4) CSV seed (UK/EU/CM → US)
+-- ============================================================================
+-- 4) CSV size map (UK/EU/CM → US), canonicalize category for the join
+-- Expected columns in {{ ref('shoe_size_map') }}:
+--   brand, category, gender, us, uk, eu, mondo_cm (names can vary; adjust if needed)
+-- ============================================================================
 size_map as (
   select
     lower(replace(brand, ' ', ''))  as brand_key,
-    category,
+    /* normalize CSV category to men|women|kids for robust join */
+    case
+      when lower(category) in ('men','mens','male','m','men-shoes') then 'men'
+      when lower(category) in ('women','womens','female','f','women-shoes') then 'women'
+      when lower(category) in (
+          'kids','kid','children','child','youth',
+          'older-kids-shoes','little-kids-shoes','baby-toddlers-shoes',
+          'boys','girls'
+      ) then 'kids'
+      else lower(category)
+    end as cat_group,
     lower(gender)                   as gender_map,
     us,
     uk::float         as uk,
@@ -101,7 +131,10 @@ size_map as (
   from {{ ref('shoe_size_map') }}
 ),
 
--- 5) Pull sizes from extra, supporting either `sizes` or `variants[*].size`
+-- ============================================================================
+-- 5) PULL SIZES from extra (VARIANT) — DO NOT try_parse_json on a VARIANT
+--    Support either: extra.sizes (array) OR extra.variants[*].size
+-- ============================================================================
 sizes_flat as (
   select
     p.dwid, p.year, p.month, p.day,
@@ -109,52 +142,55 @@ sizes_flat as (
     p.price_sale, p.price_original,
     p.gender, p.age_group, p.brand,
     p.conv_category,
+    p.conv_group,
     p.brand_key,
     p.extra,
-    coalesce(nullif(f.value:label::string,''),
-             nullif(f.value:size::string,''),
-             nullif(f.value::string,'')) as size_raw
+    /* prefer 'label' or 'size' property, else raw value as string */
+    coalesce(nullif(f.value:label::string,''), nullif(f.value:size::string,''), nullif(f.value::string,'')) as size_raw
   from categorized p,
   lateral flatten(
     input =>
-      iff(try_parse_json(p.extra):sizes    is not null, try_parse_json(p.extra):sizes,
-      iff(try_parse_json(p.extra):variants is not null, try_parse_json(p.extra):variants, parse_json('[]')))
+      iff(p.extra:sizes    is not null, p.extra:sizes,
+      iff(p.extra:variants is not null, p.extra:variants, parse_json('[]')))
   ) f
 ),
 
--- 6) Parse & detect size system
+-- ============================================================================
+-- 6) PARSE & DETECT SIZE SYSTEM
+-- ============================================================================
 sizes_parsed as (
   select
     s.*,
     upper(trim(size_raw)) as size_u,
 
     -- Kids: "1Y", "12C", or "1 Y"/"12 C"
-    iff(regexp_like(upper(size_raw), '([0-9]+(\.[0-9])?)\s*[YC]$'),
-        regexp_replace(upper(size_raw), '.*?([0-9]+(\.[0-9])?)\s*([YC])$', '\\1\\3'),
+    iff(regexp_like(upper(size_raw), '([0-9]+(\\.[0-9])?)\\s*[YC]$'),
+        regexp_replace(upper(size_raw), '.*?([0-9]+(\\.[0-9])?)\\s*([YC])$', '\\1\\3'),
         null) as us_kids,
 
-    -- Adult US: explicit "US" or bare number when adult category
+    -- Adult US: explicit "US" anywhere OR bare number if adult group
     iff(
-      regexp_like(upper(size_raw), '\bUS\b')
-      or (regexp_like(upper(size_raw), '^[0-9]+(\.[0-9])?$')
-          and conv_category in ('men-shoes','women-shoes')),
-      regexp_substr(upper(size_raw), '([0-9]+(\.[0-9])?)', 1, 1, 'e', 1),
+      regexp_like(upper(size_raw), '\\bUS\\b')
+      or (regexp_like(upper(size_raw), '^[0-9]+(\\.[0-9])?$') and conv_group in ('men','women')),
+      regexp_substr(upper(size_raw), '([0-9]+(\\.[0-9])?)', 1, 1, 'e', 1),
       null
     ) as us_adult,
 
-    -- UK/EU/CM numbers
-    iff(regexp_like(upper(size_raw), '\bUK\b'),
-        regexp_substr(upper(size_raw), '([0-9]+(\.[0-9])?)', 1, 1, 'e', 1), null) as uk_str,
+    -- UK/EU/CM numbers (tolerant of spacing)
+    iff(regexp_like(upper(size_raw), '\\bUK\\b'),
+        regexp_substr(upper(size_raw), '([0-9]+(\\.[0-9])?)', 1, 1, 'e', 1), null) as uk_str,
 
-    iff(regexp_like(upper(size_raw), '\b(EU|EUR)\b'),
-        regexp_substr(upper(size_raw), '([0-9]+(\.[0-9])?)', 1, 1, 'e', 1), null) as eu_str,
+    iff(regexp_like(upper(size_raw), '\\b(EU|EUR)\\b'),
+        regexp_substr(upper(size_raw), '([0-9]+(\\.[0-9])?)', 1, 1, 'e', 1), null) as eu_str,
 
-    iff(regexp_like(upper(size_raw), '\b(CM|MONDO|JP)\b'),
-        regexp_substr(upper(size_raw), '([0-9]+(\.[0-9])?)', 1, 1, 'e', 1), null) as cm_str
+    iff(regexp_like(upper(size_raw), '\\b(CM|MONDO|JP)\\b'),
+        regexp_substr(upper(size_raw), '([0-9]+(\\.[0-9])?)', 1, 1, 'e', 1), null) as cm_str
   from sizes_flat s
 ),
 
--- 7) Decide source system + numeric helpers
+-- ============================================================================
+-- 7) DECIDE SOURCE SYSTEM + NUMERIC HELPERS
+-- ============================================================================
 sizes_typed as (
   select
     p.*,
@@ -173,7 +209,9 @@ sizes_typed as (
   from sizes_parsed p
 ),
 
--- 8) Map non‑US → US via seed (brand + category + value)
+-- ============================================================================
+-- 8) MAP non-US → US via seed (brand_key + cat_group + numeric value)
+-- ============================================================================
 sizes_mapped as (
   select
     t.*,
@@ -181,7 +219,7 @@ sizes_mapped as (
   from sizes_typed t
   left join size_map m
     on m.brand_key = t.brand_key
-   and m.category  = t.conv_category
+   and m.cat_group = t.conv_group
    and (
         (t.size_system = 'UK' and m.uk = t.uk_num)
      or (t.size_system = 'EU' and m.eu = t.eu_num)
@@ -189,20 +227,30 @@ sizes_mapped as (
    )
 ),
 
--- 9) Final US size per flattened size row
+-- ============================================================================
+-- 9) FINAL US size per flattened row
+--    Adult US: produce "7" not "7.0" (trim .0); Kids keep "1Y"/"12C"
+-- ============================================================================
 sizes_final as (
   select
     dwid, id,
     case
-      when size_system = 'US' and us_kids is not null      then us_kids
-      when size_system = 'US' and us_adult_num is not null then to_varchar(round(us_adult_num, 1))
+      when size_system = 'US' and us_kids is not null then us_kids
+      when size_system = 'US' and us_adult_num is not null then
+           case
+             when round(us_adult_num, 1) = trunc(round(us_adult_num, 1))
+               then to_varchar(trunc(round(us_adult_num, 1)))
+             else to_varchar(round(us_adult_num, 1))
+           end
       else us_from_map
     end as size_us
   from sizes_mapped
   where size_raw is not null
 ),
 
--- 10) Aggregate to US array per product
+-- ============================================================================
+-- 10) AGGREGATE US sizes per product
+-- ============================================================================
 sizes_agg as (
   select
     dwid, id,
@@ -212,7 +260,9 @@ sizes_agg as (
   group by dwid, id
 ),
 
--- 11) Join back and overwrite extra.sizes with the normalized array
+-- ============================================================================
+-- 11) JOIN BACK & OVERWRITE extra.sizes with the normalized US array
+-- ============================================================================
 to_load as (
   select
     e.dwid, e.year, e.month, e.day,
@@ -239,4 +289,4 @@ to_load as (
   {% endif %}
 )
 
-select * from to_load
+select * from to_load;
